@@ -1,34 +1,25 @@
-	;    the bootloader for potatOs
-	org  0x7c00; start from 0x07c00
+	;; the bootloader for potatOs
+	;; function:
+	;; - load init_kernel.asm and jump to it
+
 	bits 16; 16 bits mode
+	org  0x7c00; start from 0x07c00
 
-	;   bootloader entry
-	jmp start
+	jmp start; program start
 
-	; put offset of string in bx
-
-print_message:
-	mov al, [bx]
-	cmp al, 0
-	je  end_print
-	int 10h
-	inc bx
-	jmp print_message
-
-end_print:
-	ret
+%include "./libs/print.asm"; for printing [ function = print_message( bx = string) ]
+KENREL_LOCATION equ 0x1000
 
 load_kernel:
 	;setting up Disk
-	mov      ah, 02h; first thing to set
-	mov      al, 01h; number of sectors to read
+	mov      ah, 0x02; first thing to set
+	mov      al, 20; number of sectors to read
 	mov      dl, [disknum]; the disk type to read 80h for harddisk (using disknum)
 	;seting  up CHS
 	mov      ch, 0; Cylinder to read ( C )
 	mov      dh, 0; which Head ( H )
 	mov      cl, 2; how many sectors to read ( S )
-	mov      bx, 0; where to load disk in memory
-	int      13h; intuerupt
+	int      13h; load disk !
 	jc       load_kernel_err
 	cmp      al, 01h
 	jne      load_kernel_err
@@ -42,6 +33,11 @@ load_kernel_err:
 	hlt
 
 start:
+	;kernel location
+	KERNEL_LOCATION equ 0x1000
+	;save   disk type number
+	mov     [disknum], dl
+
 	;set registers
 	xor  ax, ax
 	mov  es, ax
@@ -56,34 +52,36 @@ start:
 	int        0x10
 
 	;printing boot message
-	mov       ah, 0x0e
-	mov       bx, booting; for some reason ds:si is not working ( using bx )
+	mov       bx, booting
+	call      print_message
+	mov       bx, booting_2
 	call      print_message
 
-	;save  disk type number
-	mov    [disknum], dl
-	;where to load disk memory es:bx = pointer to where to load disk in memory
-	mov    ax, 0x7e00; 7e00 = 7c00 + 512B(the A)
-	mov    es, ax; hence 7e00:0000 is where we want to load our disk
-	;load  disk into memory
-	call   load_kernel
+	;load kernel
+	xor   ax, ax; where to load disk memory es:bx = pointer load disk
+	mov   es, ax
+	mov   bx, KERNEL_LOCATION
+	call  load_kernel
 
-	;test if disk has been loaded print whats at 7e00:000 which should be A
-	;mov  ah, 0x0e
-	;mov  bx, 0x0
-	;mov  al, [es:bx]
-	;int  10h
+	;clear the screen
+	mov    ah, 0x0
+	mov    al, 0x3
+	int    0x10
 
-	jmp 7e00h:0000h; jump to loaded disk
+	;        switch to protected mode
+	%include "./libs/protected_mode.asm"
 
 booting:
-	db 'looking for potat0s Kernel to boot...', 0x0d, 0x0a, 0
-	kernel_err_msg: db 'error loading kernel',0x0d,0x0a,0
+	db 'welcome to potatOs...', 0x0d, 0x0a, 0
+
+booting_2:
+	db 'initializing kernel to boot...', 0x0d, 0x0a, 0
+
+kernel_err_msg:
+	db 'Error: could not init kernel, could not read disk', 0x0d, 0x0a, 0
 
 disknum:
-	db    0
+	db 0
+
 	times 510-($-$$) db 0
 	dw    0xaa55; magic boot number
-	;seg  descrpitor = 8bytes ( )
-	;GDTR = [16bits GDT limit] [32bits GDT base address]
-	;seg  selector = [16bits]( 00 = privelege, 0 = table indicator, 00...=index of sege descriptor)
