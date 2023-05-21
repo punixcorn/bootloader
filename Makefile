@@ -35,5 +35,6 @@ test:
 	yasm test.asm  -o test.img 
 
 clean: 
+	@touch a.img 
 	@echo "Cleaning..."
-	@rm -rf build *.o os
+	@rm -rf build *.o os *.img

@@ -1,3 +1,4 @@
+	cli
 	;; the bootloader for potatOs
 	;; function:
 	;; - load init_kernel.asm and jump to it
@@ -18,7 +19,6 @@ load_kernel:
 	mov      ch, 0h; Cylinder to read ( C )
 	mov      dh, 0h; which Head ( H )
 	mov      cl, 2h; which sector to start reading ( S )
-	hlt
 	int      13h; load disk !
 	jc       load_kernel_err
 
