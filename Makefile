@@ -8,12 +8,14 @@ kernel=kernel.cpp
 includes=
 VM=qemu-system-x86_64
 BUILD_DIR=./build
+FINAL=./os
 
 .phony: all bootloader clean kernel
 
 all:bootloader  kernel
-	dd if=$(BUILD_DIR)/bootloader.bin of=$(BUILD_DIR)/potatOs.img
-	dd seek=1 conv=sync if=$(BUILD_DIR)/Kernel.bin of=$(BUILD_DIR)/os.img bs=512
+	dd if=/dev/zero of=$(FINAL)/potatoOs.img bs=512 count=10
+	cat $(BUILD_DIR)/bootloader.bin $(BUILD_DIR)/Kernel.bin > $(BUILD_DIR)/os.img
+	dd if=$(BUILD_DIR)/os.img  of=$(FINAL)/potatOs.img conv=notrunc bs=512
 
 bootloader: make_dir $(bootloader)
 	$(AS) $(bootloader) $(includes) -f bin -o $(BUILD_DIR)/bootloader.bin 
@@ -21,14 +23,17 @@ bootloader: make_dir $(bootloader)
 kernel:
 	i386-elf-gcc -ffreestanding -m32 -g -c $(kernel) -o $(BUILD_DIR)/kernel.o
 	$(AS) $(load_kernel) -f elf -o $(BUILD_DIR)/kernel_load.o
-	i386-elf-ld -o $(BUILD_DIR)/Kernel.bin -Ttext 0x1000 $(BUILD_DIR)/kernel_load.o $(BUILD_DIR)/kernel.o --oformat binary 
+	i386-elf-ld -o $(BUILD_DIR)/Kernel.bin -Tlinker.ld $(BUILD_DIR)/kernel_load.o $(BUILD_DIR)/kernel.o --oformat binary 
 	
 run:all
-	$(VM) $(BUILD_DIR)/potatOs.img
+	$(VM) $(FINAL)/potatOs.img -monitor stdio
 	
 make_dir: clean
-	@mkdir $(BUILD_DIR)
+	@mkdir $(BUILD_DIR) $(FINAL)
+
+test: 
+	yasm test.asm  -o test.img 
 
 clean: 
 	@echo "Cleaning..."
-	@rm -rf build *.o
+	@rm -rf build *.o os

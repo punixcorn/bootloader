@@ -8,22 +8,19 @@
 	jmp start; program start
 
 %include "./libs/print.asm"; for printing [ function = print_message( bx = string) ]
-KENREL_LOCATION equ 0x1000
 
 load_kernel:
 	;setting up Disk
 	mov      ah, 0x02; first thing to set
-	mov      al, 20; number of sectors to read
+	mov      al, 25; number of sectors to read
 	mov      dl, [disknum]; the disk type to read 80h for harddisk (using disknum)
 	;seting  up CHS
-	mov      ch, 0; Cylinder to read ( C )
-	mov      dh, 0; which Head ( H )
-	mov      cl, 2; how many sectors to read ( S )
+	mov      ch, 0h; Cylinder to read ( C )
+	mov      dh, 0h; which Head ( H )
+	mov      cl, 2h; which sector to start reading ( S )
+	hlt
 	int      13h; load disk !
 	jc       load_kernel_err
-	cmp      al, 01h
-	jne      load_kernel_err
-	ret
 
 load_kernel_err:
 	push bx
@@ -58,15 +55,15 @@ start:
 	call      print_message
 
 	;load kernel
-	xor   ax, ax; where to load disk memory es:bx = pointer load disk
-	mov   es, ax
-	mov   bx, KERNEL_LOCATION
+	mov   ax, KERNEL_LOCATION
+	mov   es, ax; where to load disk memory es:bx = pointer load disk
+	xor   bx, bx
 	call  load_kernel
 
-	;clear the screen
-	mov    ah, 0x0
-	mov    al, 0x3
-	int    0x10
+	;switch to text mode
+	mov     ah, 0x0
+	mov     al, 0x3
+	int     0x10
 
 	;        switch to protected mode
 	%include "./libs/protected_mode.asm"
@@ -78,7 +75,10 @@ booting_2:
 	db 'initializing kernel to boot...', 0x0d, 0x0a, 0
 
 kernel_err_msg:
-	db 'Error: could not init kernel, could not read disk', 0x0d, 0x0a, 0
+	db 'Error: could not init kernel,[loading Disk]  carry flag was set', 0x0d, 0x0a, 0
+
+kernel_err_msg_2:
+	db 'Error: could not init kernel,[loading Disk] al was not same', 0x0d, 0x0a, 0
 
 disknum:
 	db 0
