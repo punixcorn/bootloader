@@ -1,4 +1,4 @@
-	;  init gdt, protected mode then call Kernel
+	;; switch to protected mode by : init gdt, protected mode then call Kernel
 	;; To know
 	;; limit : 20bits
 	;; base : 32bits
@@ -20,7 +20,7 @@
 	;; 3rd : 0
 	;; 4th : 0
 
-	;; data segment
+	;; data segment ( changes to code segment )
 	;; 4 bits : type flags
 	;; 2nd : direction(grow downwards?) ?  0
 	;; 3rd : writeable ? 1
@@ -34,7 +34,7 @@ null_descriptor:
 
 code_descriptor:
 	dw 0xffff;; first 16bits of limit
-	dw 0x0;; first 24 bitsof base [ 16 +
+	dw 0x0;; first 24 bits of base [ 16 +
 	db 0x0;; 8 ]
 	db 0x9a;; 0b10011010;; ppt + typeflags
 	db 0xcf;; 0b11001111;; Flags + final 4 bits of limit
@@ -75,7 +75,7 @@ start_protected_mode:
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
-	mov ebp, 0x90000
+	mov ebp, 0x9000
 	mov esp, ebp
 
 kernel_jmp:

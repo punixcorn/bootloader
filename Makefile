@@ -1,10 +1,10 @@
 # Make file for the potatOs
 # for now only bootloader
 
-AS=yasm 
+AS=yasm
 bootloader=bootloader.asm
-load_kernel=kernel_load.asm
-kernel=kernel.cpp 
+init_kernel=kernel_init.asm
+kernel=kernel.cpp
 includes=
 VM=qemu-system-x86_64
 BUILD_DIR=./build
@@ -22,17 +22,14 @@ bootloader: make_dir $(bootloader)
 	
 kernel:
 	i386-elf-gcc -ffreestanding -m32 -g -c $(kernel) -o $(BUILD_DIR)/kernel.o
-	$(AS) $(load_kernel) -f elf -o $(BUILD_DIR)/kernel_load.o
-	i386-elf-ld -o $(BUILD_DIR)/Kernel.bin -Tlinker.ld $(BUILD_DIR)/kernel_load.o $(BUILD_DIR)/kernel.o --oformat binary 
-	
+	$(AS) $(init_kernel) -f elf -o $(BUILD_DIR)/kernel_init.o
+	i386-elf-ld -o $(BUILD_DIR)/Kernel.bin -Tlinker.ld $(BUILD_DIR)/kernel_init.o $(BUILD_DIR)/kernel.o --oformat binary
+
 run:all
 	$(VM) $(FINAL)/potatOs.img -monitor stdio
-	
+
 make_dir: clean
 	@mkdir $(BUILD_DIR) $(FINAL)
-
-test: 
-	yasm test.asm  -o test.img 
 
 clean: 
 	@touch a.img 
