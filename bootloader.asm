@@ -1,8 +1,8 @@
-	cli
 	;; the bootloader for potatOs
 	;; function:
 	;; - load init_kernel.asm and jump to it
 
+	cli
 	bits 16; 16 bits mode
 	org  0x7c00; start from 0x07c00
 
@@ -11,16 +11,17 @@
 %include "./libs/print.asm"; for printing [ function = print_message( bx = string) ]
 
 load_kernel:
-	;setting up Disk
-	mov      ah, 0x02; first thing to set
-	mov      al, 25; number of sectors to read
-	mov      dl, [disknum]; the disk type to read 80h for harddisk (using disknum)
-	;seting  up CHS
-	mov      ch, 0h; Cylinder to read ( C )
-	mov      dh, 0h; which Head ( H )
-	mov      cl, 2h; which sector to start reading ( S )
-	int      13h; load disk !
-	jc       load_kernel_err
+	;   setting up Disk
+	mov al, 2; number of sectors to read
+	mov dl, [disknum]; the disk type to read 80h for harddisk (using disknum)
+	;   setting  up CHS
+	mov ch, 0h; Cylinder ( C )
+	mov dh, 0h; Head ( H )
+	mov cl, 2h; sector ( S )
+	;   setting interrupt
+	mov ah, 0x02; first thing to set
+	int 13h; load disk !
+	jc  load_kernel_err
 
 load_kernel_err:
 	push bx
@@ -31,7 +32,7 @@ load_kernel_err:
 
 start:
 	;kernel location
-	KERNEL_LOCATION equ 0x1000
+	KERNEL_LOCATION equ 0x7e00
 	;save   disk type number
 	mov     [disknum], dl
 
@@ -55,9 +56,9 @@ start:
 	call      print_message
 
 	;load kernel
-	mov   ax, KERNEL_LOCATION
+	xor   ax, ax
 	mov   es, ax; where to load disk memory es:bx = pointer load disk
-	xor   bx, bx
+	mov   bx, KERNEL_LOCATION
 	call  load_kernel
 
 	;switch to text mode
