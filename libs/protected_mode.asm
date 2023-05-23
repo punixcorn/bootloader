@@ -29,12 +29,11 @@ GDT_START:
 	; a null descriptor is first
 
 null_descriptor:
-	dd 0x0; 2 byte (NULL)
-	dd 0x0; 2 byte (NULL)
+	dw 0, 0, 0, 0
 
 code_descriptor:
 	dw 0xffff;; first 16bits of limit
-	dw 0x0;; first 24 bits of base [ 16 +
+	dw 0x0000;; first 24 bits of base [ 16 +
 	db 0x0;; 8 ]
 	db 0x9a;; 0b10011010;; ppt + typeflags
 	db 0xcf;; 0b11001111;; Flags + final 4 bits of limit

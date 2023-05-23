@@ -13,7 +13,7 @@ FINAL=./os
 .phony: all bootloader clean kernel
 
 all:bootloader  kernel
-	dd if=/dev/zero of=$(FINAL)/potatOs.img bs=512 count=10
+	dd if=/dev/zero of=$(FINAL)/potatOs.img bs=512 count=50
 	cat $(BUILD_DIR)/bootloader.bin $(BUILD_DIR)/Kernel.bin > $(BUILD_DIR)/os.img
 	dd if=$(BUILD_DIR)/os.img  of=$(FINAL)/potatOs.img conv=notrunc bs=512
 

@@ -12,7 +12,6 @@
 start:
 	KERNEL_LOCATION equ 0x1000;kernel location
 	SECTORS_TO_LOAD equ 9; sectors to read into memory
-	mov [disknum], dl; save disk type number
 
 	;set registers
 	xor  ax, ax
@@ -60,7 +59,5 @@ load_disk_err_msg_cf:
 load_disk_err_AH:
 	db 'Value of ah : ', 0
 
-disknum:
-	db    0
 	times 510-($-$$) db 0
 	dw    0xaa55; magic boot number
