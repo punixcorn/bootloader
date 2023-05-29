@@ -1,0 +1,79 @@
+
+enter write  a gdt, idt and enter  protected mode
+Use Best Model (slow)
+Short Answer
+enter write  a gdt, idt and enter  protected mode
+Answer | fast Model
+
+To enter protected mode, we need to perform the following steps:
+
+    Set up the Global Descriptor Table (GDT):
+        The GDT is a data structure used by the CPU to manage memory access in protected mode.
+        We need to define the segment descriptors for code and data segments in the GDT.
+        The GDT should be loaded into memory at a specific address and its location should be pointed to by the GDTR register.
+        independent-software.com
+
+    Set up the Interrupt Descriptor Table (IDT):
+        The IDT is a data structure used by the CPU to manage interrupts in protected mode.
+        We need to reserve memory for the IDT and fill it with zeroes.
+        We then need to tell the CPU where the IDT is located by using the IDTR register.
+        independent-software.com
+    Load the address of the GDT into the GDTR register:
+        We use the lgdt instruction to load the address of the GDT into the GDTR register.
+    Load the address of the IDT into the IDTR register:
+        We use the lidt instruction to load the address of the IDT into the IDTR register.
+    Enable protected mode:
+        We set the 0th bit of the control register 0 (CR0) to 1 to enable protected mode.
+        We then jump to a code segment descriptor in the GDT to enter protected mode.
+
+Here's some sample code to set up the GDT, IDT, and enter protected mode:
+
+; Set up the GDT
+gdt:
+    ; Null descriptor
+    dd 0
+    dd 0
+    
+    ; Code segment descriptor
+    dw 0xFFFF ; Limit
+    dw 0x0 ; Base
+    db 0x0 ; Base
+    db 0x9A ; Access byte
+    db 0xCF ; Granularity byte
+    db 0x0 ; Base
+    
+    ; Data segment descriptor
+    dw 0xFFFF ; Limit
+    dw 0x0 ; Base
+    db 0x0 ; Base
+    db 0x92 ; Access byte
+    db 0xCF ; Granularity byte
+    db 0x0 ; Base
+    
+gdt_size:
+    dw $ - gdt - 1
+gdt_ptr:
+    dd gdt_size
+    dd gdt
+    
+; Set up the IDT
+idt:
+    times 256 dw 0
+idt_ptr:
+    dw 256 * 8 - 1
+    dd idt
+    
+load_gdt:
+    lgdt [gdt_ptr]
+    mov eax, cr0
+    or eax, 0x1
+    mov cr0, eax
+    
+load_idt:
+    lidt [idt_ptr]
+    
+    ; Jump to code segment descriptor in GDT to enter protected mode
+    jmp 0x08:protected_mode_entry
+    
+protected_mode_entry:
+    ; Code to execute in protected mode
