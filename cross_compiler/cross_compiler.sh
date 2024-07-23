@@ -13,11 +13,11 @@ cd binutils-build
 ../binutils-2.39/configure --target=$TARGET --enable-interwork --enable-multilib --disable-nls --disable-werror --prefix=$PREFIX 2>&1 | tee configure.log
 sudo make all install 2>&1 | tee make.log
 
-cd /GCC/src
-curl -O https://ftp.gnu.org/gnu/gcc/gcc-12.2.0/gcc-12.2.0.tar.gz #140mb
-tar xf gcc-12.2.0.tar.gz
-mkdir gcc-build
-cd gcc-build
+sudo cd /GCC/src
+sudo curl -O https://ftp.gnu.org/gnu/gcc/gcc-12.2.0/gcc-12.2.0.tar.gz #140mb
+sudo tar xf gcc-12.2.0.tar.gz
+sudo mkdir gcc-build
+sudo cd gcc-build
 echo Configure: . . . . . . .
 ../gcc-12.2.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --disable-libssp --enable-language=c,c++ --without-headers
 echo MAKE ALL-GCC:

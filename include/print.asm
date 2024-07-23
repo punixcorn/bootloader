@@ -1,5 +1,5 @@
-	;; print a string
-	;; address loaded into bx
+; print a string
+; address loaded into bx
 
 print_message:
 	pusha

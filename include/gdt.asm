@@ -51,33 +51,8 @@ data_descriptor:
 GDT_END:
 
 GDT_descriptor:
-	dw (GDT_END - GDT_START ) -1; size of GDT
+	dw (GDT_END - GDT_START ) - 1; size of GDT
 	dd GDT_START; memory address of GDT_START
 
 	CODE_SEG equ code_descriptor - GDT_START
 	DATA_SEG equ data_descriptor - GDT_START
-
-	cli
-	lgdt [GDT_descriptor]
-	mov  eax, cr0
-	or   eax, 1
-	mov  cr0, eax
-	;    far jump
-	jmp  CODE_SEG:start_protected_mode
-
-[bits 32]
-
-start_protected_mode:
-	;   set up resgisters
-	mov ax, DATA_SEG
-	mov ds, ax
-	mov ss, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ebp, 0x90000
-	mov esp, ebp
-
-kernel_jmp:
-	;jump to kernel
-	jmp   KERNEL_LOCATION

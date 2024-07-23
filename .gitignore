@@ -1,3 +1,5 @@
 build/
 .tests/
 os/
+tests/
+test/
